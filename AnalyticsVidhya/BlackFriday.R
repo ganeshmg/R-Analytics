@@ -41,18 +41,6 @@ train$Product_Category_1 = as.factor(train$Product_Category_1)
 train$Product_Category_2 = as.factor(train$Product_Category_2)
 train$Product_Category_3 = as.factor(train$Product_Category_3)
 
-
-
-
-
-
-
-
-
-
-
-
-
 train$Src = 'Train'
 test$Number_SKU_Sold = 0
 test$Src = 'Test'
@@ -127,11 +115,6 @@ rownames(submit) = NULL
 
 write.csv(submit,"Submit_gbm_model2.csv",row.names = FALSE)
 
-
-
-
-
-
 #Data is more than a year, then it may be necessary to allow for annual seasonality 
 #as well as weekly seasonality and hence 7 (days a week), 365.25 (days a year)
 train_ts <- msts(train, seasonal.periods=c(7,365.25))
@@ -141,9 +124,6 @@ fc <- forecast(fit)
 plot(fc)
 
 plot(train)
-
-
-
 
 #Arima
 
