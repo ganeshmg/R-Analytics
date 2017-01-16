@@ -1,0 +1,218 @@
+---
+title: "Relationship of financial situation with the opinion of family income"
+date: "31-Oct-2015"
+output:
+  html_document:
+    theme: cerulean
+---
+
+<!-- For more info on RMarkdown see http://rmarkdown.rstudio.com/ -->
+
+<!-- Enter the code required to load your data in the space below. The data will be loaded but the line of code won't show up in your write up (echo=FALSE) in order to save space-->
+```{r echo=FALSE}
+load("C:\\statistics-project-gss.Rdata")
+```
+
+<!-- In the remainder of the document, add R code chunks as needed -->
+
+### Introduction:
+
+Does the satisfaction on the financial situation (satfin) of a person have any relationship with the opinion of family income (finrela)? 
+
+This is an observational study and we wanted to see whether the satisfaction on their financial situation affected the way they think/feel their income is, when compared with american family income in general.
+
+We feel the satisfaction financially of a person, would make a positive impact on their opinion of family income with american public in general.
+
+### Data:
+
+All data within each year (1972,1983,1992,2002,2012) will be studied and each year's data will be compared with other years to see whether the year had any impact on these variables.
+
+This data will be used to establish only a correlation between the variables of interest. The relationship between these variables alone is studied and even though there might be a positive or negative relationship, it might not necessarily mean that one variable affects the other, as in causal.
+
+Data frame would be created for each year of data, with only the required columns like year, sex, year, degree, satfin and finrela.
+
+```{r}
+gss_1972 = gss[gss$year=="1972",c("caseid","year","sex","year","degree","satfin","finrela")]
+gss_1983 = gss[gss$year=="1983",c("caseid","year","sex","year","degree","satfin","finrela")]
+gss_1993 = gss[gss$year=="1993",c("caseid","year","sex","year","degree","satfin","finrela")]
+gss_2002 = gss[gss$year=="2002",c("caseid","year","sex","year","degree","satfin","finrela")]
+gss_2012 = gss[gss$year=="2012",c("caseid","year","sex","year","degree","satfin","finrela")]
+```
+
+
+### Exploratory data analysis:
+
+This being an observational study, we will use the data subset for each year created from the original data set provided. 
+
+Lets first generate the subset of data for those who are satisfied with their financial situation. We believe for people who are satisified with their financial situation should tend to feel that their opinion of family income is average or above average i.e., in a self content way.
+
+```{r}
+gss_1972[complete.cases(gss_1972) & gss_1972$satfin=="Satisfied",] -> satis_1972 
+gss_1983[complete.cases(gss_1983) & gss_1983$satfin=="Satisfied",] -> satis_1983 
+gss_1993[complete.cases(gss_1993) & gss_1993$satfin=="Satisfied",] -> satis_1993
+gss_2002[complete.cases(gss_2002) & gss_2002$satfin=="Satisfied",] -> satis_2002
+gss_2012[complete.cases(gss_2012) & gss_2012$satfin=="Satisfied",] -> satis_2012 
+```
+
+```{r}
+plot(satis_1972$finrela,xlab="Opinion of Family income",ylab="Count",main="1972 GSS Data")
+```
+
+
+The above plot shows the 1972 GSS data where the people were satisified with their financial situation. The opinion of family income with general american shows a trend where their opinion being Average and above average, most of the time.
+
+The plot shows a similar trend even for data from the year 1983, 1993, 2002 and 2012.
+
+```{r}
+par(mfrow = c(2,2))
+plot(satis_1983$finrela,xlab="Opinion of Family income",ylab="Count",main="1983 GSS Data")
+plot(satis_1993$finrela,xlab="Opinion of Family income",ylab="Count",main="1993 GSS Data")
+plot(satis_2002$finrela,xlab="Opinion of Family income",ylab="Count",main="2002 GSS Data")
+plot(satis_2012$finrela,xlab="Opinion of Family income",ylab="Count",main="2012 GSS Data")
+```
+
+Now let us see the trend of percentage of people over years for each category of Satisfaction on their financial situation with the opinion.
+
+```{r echo=FALSE}
+Year_list=unique(gss$year)
+
+iterations = length(Year_list) 
+variables = 7
+output = NULL
+output <- data.frame("Year"=character(),"satfin Financial Satisfaction"=character(),"finrela Far Below Average %" = double(),"finrela Below Average %" = double(),"finrela Average %" = double(),"finrela Above Average %" = double(),"finrela Far Above Average %" = double(),stringsAsFactors = FALSE)
+
+satis = c("Satisfied","More Or Less","Not At All Sat")
+
+for(i in 1:iterations) {
+  for(j in 1:length(satis)) {
+    subset_data = gss[ gss$year==Year_list[i] & gss$satfin==satis[j], c("caseid", "sex", "satfin" ,"finrela")]
+    year_subset_data = subset_data[ complete.cases(subset_data),]
+    
+    fba_percent=round(nrow(year_subset_data[year_subset_data$finrela=="Far Below Average",])*100/nrow(year_subset_data),2)
+    ba_percent=round(nrow(year_subset_data[year_subset_data$finrela=="Below Average",])*100/nrow(year_subset_data),2)
+    a_percent=round(nrow(year_subset_data[year_subset_data$finrela=="Average",])*100/nrow(year_subset_data),2)
+    aa_percent=round(nrow(year_subset_data[year_subset_data$finrela=="Above Average",])*100/nrow(year_subset_data),2)
+    faa_percent=round(nrow(year_subset_data[year_subset_data$finrela=="Far Above Average",])*100/nrow(year_subset_data),2)
+    temp1 <- rbind(output,data.frame(Year_list[i],satis[j],fba_percent,ba_percent,a_percent,aa_percent,faa_percent))
+    output=temp1
+  }
+}
+
+#output <- data.frame(output)
+gss_percent <- output[complete.cases(output),]
+rownames(gss_percent) = NULL
+colnames(gss_percent) = c("Year","satfin Financial Satisfaction","finrela Far Below Average %","finrela Below Average %","finrela Average %","finrela Above Average %","finrela Far Above Average %")
+
+
+gss_satis = gss_percent[gss_percent$`satfin Financial Satisfaction`=="Satisfied",]
+gss_moreorless = gss_percent[gss_percent$`satfin Financial Satisfaction`=="More Or Less",]
+gss_notatallsat = gss_percent[gss_percent$`satfin Financial Satisfaction`=="Not At All Sat",]
+rownames(gss_satis) = NULL
+rownames(gss_moreorless) = NULL
+rownames(gss_notatallsat) = NULL
+
+ 
+ y_range <- range(0,100)
+par(mfrow = c(1,1))
+plot(gss_satis$Year,gss_satis$`finrela Average %`,xlab="Year",ylab="Average %",type="l",col="blue",ylim=y_range)
+lines(gss_notatallsat$Year,gss_notatallsat$`finrela Average %`,xlab="Year",ylab="Average %",type="l",col="red",ylim=y_range)
+lines(gss_moreorless$Year,gss_moreorless$`finrela Average %`,xlab="Year",ylab="Average %",type="l",col="green",ylim=y_range)
+legend(x="topright", c("Satisfied","More or Less Satisfied","Not at all Satisfied"), cex=0.75,col=c("blue","green","red"),lwd = 1, xjust=0.5, yjust=0.2)
+
+```
+
+As we see in the above plot, the percentage for "Average" opinion of family income, is very high for those who were either "Satisfied" or "More or Less Satisfied" with their financial situation when compared to those who were "Not at all Satisfied", for years starting from 1972 until 2012.
+
+Similarly let us create plots for other categories of opinion of family income.
+
+```{r echo= FALSE}
+par(mfrow=c(2,3))
+
+plot(gss_satis$Year,gss_satis$`finrela Far Below Average %`,xlab="Year",ylab="Far Below Average %",type='l',col="blue",ylim=y_range)
+lines(gss_notatallsat$Year,gss_notatallsat$`finrela Far Below Average %`,xlab="Year",ylab="Far Below Average %",type="l",col="red",ylim=y_range)
+lines(gss_moreorless$Year,gss_moreorless$`finrela Far Below Average %`,xlab="Year",ylab="Far Below Average %",type="l",col="green",ylim=y_range)
+
+plot(gss_satis$Year,gss_satis$`finrela Below Average %`,xlab="Year",ylab="Below Average %",type='l',col="blue",ylim=y_range)
+lines(gss_notatallsat$Year,gss_notatallsat$`finrela Below Average %`,xlab="Year",ylab="Below Average %",type="l",col="red",ylim=y_range)
+lines(gss_moreorless$Year,gss_moreorless$`finrela Below Average %`,xlab="Year",ylab="Below Average %",type="l",col="green",ylim=y_range)
+
+
+plot(1, type = "l", axes=FALSE, xlab="", ylab="")
+title(main = "LEGEND", col.main = "orange", cex.main = 0.9)
+plot_colors <- c("blue", "green","red")
+legend(x = "left",c("Satisfied","More or Less Satisfied","Not at all Satisfied"), 
+       col=plot_colors, lwd=1, cex=0.9)
+
+plot(gss_satis$Year,gss_satis$`finrela Average %`,xlab="Year",ylab="Average %",type='l',col="blue",ylim=y_range)
+lines(gss_notatallsat$Year,gss_notatallsat$`finrela Average %`,xlab="Year",ylab="Average %",type="l",col="red",ylim=y_range)
+lines(gss_moreorless$Year,gss_moreorless$`finrela Average %`,xlab="Year",ylab="Average %",type="l",col="green",ylim=y_range)
+
+
+plot(gss_satis$Year,gss_satis$`finrela Above Average %`,xlab="Year",ylab="Above Average %",type='l',col="blue",ylim=y_range)
+lines(gss_notatallsat$Year,gss_notatallsat$`finrela Above Average %`,xlab="Year",ylab="Above Average %",type="l",col="red",ylim=y_range)
+lines(gss_moreorless$Year,gss_moreorless$`finrela Above Average %`,xlab="Year",ylab="Above Average %",type="l",col="green",ylim=y_range)
+
+
+plot(gss_satis$Year,gss_satis$`finrela Far Above Average %`,xlab="Year",ylab="Far Above Average %",type='l',col="blue",ylim=y_range)
+lines(gss_notatallsat$Year,gss_notatallsat$`finrela Far Above Average %`,xlab="Year",ylab="Far Above Average %",type="l",col="red",ylim=y_range)
+lines(gss_moreorless$Year,gss_moreorless$`finrela Far Above Average %`,xlab="Year",ylab="Far Above Average %",type="l",col="green",ylim=y_range)
+
+```
+
+We see that the percentages of people who are "Not at all satisfied" with their financial status have high percentage values for "Below Average" and "Far Below Average", than the other categories of "Satisfaction of Financial Status"
+
+Similarly people who are "Not at all satisfied" with their financial status have low percentage values for "Average", "Above Average" and "Far Above Average", than the other categories of "Satisfaction of Financial Status", as expected.
+
+We also note that only very few percentage of people have extreme opinions on family income, i.e., for "Far below Average" and "Far Above Average".
+
+```{r echo = FALSE}
+gss_percent$`Less than Average` = gss_percent$`finrela Far Below Average %` + gss_percent$`finrela Below Average %`
+gss_percent$`Average and Greater than Average` = gss_percent$`finrela Average %` + gss_percent$`finrela Far Above Average %` + gss_percent$`finrela Above Average %`
+```
+
+
+### Inference:
+
+Hypothesis:
+Does the financial satisfaction of a person have any relationship with opinion of family income with american public in general?
+
+Ho (null hypothesis): 
+No. There is no relatioship between satfin (satisfaction financially) and finrela (opinion of family income) and they are independent. finrela doesnt vary by satfin.
+Ha (Alternate hypothesis):
+satfin (satisfaction financially) and finrela (opinion of family income) are dependent. finrela vary based on satfin.
+
+```{r}
+gss_tmp = gss[c("satfin","finrela")]
+gss_tmp1 = gss_tmp[complete.cases(gss_tmp),]
+summary(gss_tmp1)
+table(gss_tmp1$satfin,gss_tmp1$finrela)
+pchisq(11144.3282,8,lower.tail = FALSE)
+```
+
+Chi-square independence test yielded a very small value (0), thereby rejecting the null hypothesis, which indicates that satfina and finrela are dependent.
+
+
+
+### Conclusion:
+
+Based on the data analysis done, with the hypothesis testing and with the illustrations (plot) we conclude that the financial satisfaction of a person does have an impact on their opinion of family income with american public in general. We also see from the data and illustrations that it does concur in a positive way.
+
+### References:
+
+The following command was used to load the GSS dataset into R, which was used for the analysis
+load(url("http://bit.ly/dasi_gss_data"))
+
+
+### Appendix:
+
+gss_percent - data set
+
+```{r echo = FALSE}
+gss_analysis_dataset = gss_percent
+colnames(gss_analysis_dataset) = c("Year","satfin","finrela_fba%","finrela_ba%","finrela_a%","finrela_aa%","finrela_faa%","lessthan_avg","greaterthan_avg")
+```
+
+```{r}
+head(gss_analysis_dataset,10)
+```
+
